@@ -73,3 +73,13 @@ func (r *UserRepository) UpdateUserLinkedServer(userID string, linkedServerID st
 
 	return r.GetUserByID(userID)
 }
+
+func (r *UserRepository) UnlinkAllUsersFromServer(serverToken string) error {
+	query := `
+		UPDATE users 
+		SET linked_server = NULL, updated_at = CURRENT_TIMESTAMP 
+		WHERE linked_server = $1`
+
+	_, err := r.db.Exec(query, serverToken)
+	return err
+}

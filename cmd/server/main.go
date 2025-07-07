@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
+	"fmt"
 	"log"
-	"server-registry/internal/database"
+	"net/http"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+	"server-registry/internal/api"
 	"server-registry/internal/config"
+	"server-registry/internal/database"
 )
 
 func main() {
@@ -34,12 +37,25 @@ func main() {
 	defer func(db *sqlx.DB) {
 		err := db.Close()
 		if err != nil {
-			logger.Fatalf("Failed to close database connection: %v", err)
+			logger.Printf("Failed to close database connection: %v", err)
 		} else {
 			logger.Println("Database connection closed successfully.")
 		}
 	}(db)
 
 	logger.Println("Database connected successfully")
-	logger.Printf("Server will start on port %d", cfg.Port)
+
+	router := api.NewRouter(db)
+
+	addr := fmt.Sprintf(":%d", cfg.Port)
+	logger.Printf("Starting server on %s", addr)
+
+	server := &http.Server{
+		Addr:    addr,
+		Handler: router,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
+		logger.Fatalf("Server failed to start: %v", err)
+	}
 }
