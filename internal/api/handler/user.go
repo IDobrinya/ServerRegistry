@@ -4,12 +4,19 @@ import (
 	"encoding/json"
 	"net/http"
 	"server-registry/internal/api/dto"
+	"strings"
 )
 
 func (h *Handler) GetUserServer(w http.ResponseWriter, r *http.Request) {
-	userID := getUserIDFromContext(r)
+	userID := r.Header.Get("User-ID")
 	if userID == "" {
-		writeError(w, http.StatusInternalServerError, "User ID not found in context")
+		writeError(w, http.StatusBadRequest, "User-ID header is required")
+		return
+	}
+
+	userID = strings.TrimSpace(userID)
+	if userID == "" {
+		writeError(w, http.StatusBadRequest, "User-ID header cannot be empty")
 		return
 	}
 
@@ -51,9 +58,15 @@ func (h *Handler) GetUserServer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) LinkServerToUser(w http.ResponseWriter, r *http.Request) {
-	userID := getUserIDFromContext(r)
+	userID := r.Header.Get("User-ID")
 	if userID == "" {
-		writeError(w, http.StatusInternalServerError, "User ID not found in context")
+		writeError(w, http.StatusBadRequest, "User-ID header is required")
+		return
+	}
+
+	userID = strings.TrimSpace(userID)
+	if userID == "" {
+		writeError(w, http.StatusBadRequest, "User-ID header cannot be empty")
 		return
 	}
 
