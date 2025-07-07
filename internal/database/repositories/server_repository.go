@@ -3,14 +3,15 @@ package repositories
 import (
 	"database/sql"
 	"errors"
-	"server-registry/internal/models"
+	"github.com/jmoiron/sqlx"
+	"server-registry/internal/database/models"
 )
 
 type ServerRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewServerRepository(db *sql.DB) *ServerRepository {
+func NewServerRepository(db *sqlx.DB) *ServerRepository {
 	return &ServerRepository{db: db}
 }
 
@@ -19,30 +20,20 @@ func (r *ServerRepository) CreateServer(token string, bridgeURL *string) (*model
 		INSERT INTO servers (token, bridge_url) 
 		VALUES ($1, $2)`
 
-	result, err := r.db.Exec(query, token, bridgeURL)
+	var id int
+	err := r.db.QueryRow(query+" RETURNING id", token, bridgeURL).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	return r.GetServerByID(int(id))
+	return r.GetServerByID(id)
 }
 
 func (r *ServerRepository) GetServerByToken(token string) (*models.Server, error) {
 	query := `SELECT id, token, bridge_url, created_at, updated_at FROM servers WHERE token = $1`
 
 	server := &models.Server{}
-	err := r.db.QueryRow(query, token).Scan(
-		&server.ID,
-		&server.Token,
-		&server.BridgeURL,
-		&server.CreatedAt,
-		&server.UpdatedAt,
-	)
+	err := r.db.Get(server, query, token)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -58,13 +49,7 @@ func (r *ServerRepository) GetServerByID(serverID int) (*models.Server, error) {
 	query := `SELECT id, token, bridge_url, created_at, updated_at FROM servers WHERE id = $1`
 
 	server := &models.Server{}
-	err := r.db.QueryRow(query, serverID).Scan(
-		&server.ID,
-		&server.Token,
-		&server.BridgeURL,
-		&server.CreatedAt,
-		&server.UpdatedAt,
-	)
+	err := r.db.Get(server, query, serverID)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

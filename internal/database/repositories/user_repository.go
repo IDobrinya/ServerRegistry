@@ -3,14 +3,15 @@ package repositories
 import (
 	"database/sql"
 	"errors"
-	"server-registry/internal/models"
+	"github.com/jmoiron/sqlx"
+	"server-registry/internal/database/models"
 )
 
 type UserRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewUserRepository(db *sql.DB) *UserRepository {
+func NewUserRepository(db *sqlx.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
@@ -31,12 +32,7 @@ func (r *UserRepository) GetUserByID(userID string) (*models.User, error) {
 	query := `SELECT id, linked_server, created_at, updated_at FROM users WHERE id = $1`
 
 	user := &models.User{}
-	err := r.db.QueryRow(query, userID).Scan(
-		&user.ID,
-		&user.LinkedServer,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
+	err := r.db.Get(user, query, userID)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -52,12 +48,7 @@ func (r *UserRepository) GetUserByLinkedServer(linkedServerID string) (*models.U
 	query := `SELECT id, linked_server, created_at, updated_at FROM users WHERE linked_server = $1`
 
 	user := &models.User{}
-	err := r.db.QueryRow(query, linkedServerID).Scan(
-		&user.ID,
-		&user.LinkedServer,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
+	err := r.db.Get(user, query, linkedServerID)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

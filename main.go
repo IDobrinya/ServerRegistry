@@ -1,21 +1,45 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"github.com/jmoiron/sqlx"
+	"log"
+	"server-registry/internal/database"
+	"time"
+
+	"server-registry/internal/config"
 )
 
-//TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
-
 func main() {
-	//TIP <p>Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined text
-	// to see how GoLand suggests fixing the warning.</p><p>Alternatively, if available, click the lightbulb to view possible fixes.</p>
-	s := "gopher"
-	fmt.Printf("Hello and welcome, %s!\n", s)
+	ctx := context.Background()
 
-	for i := 1; i <= 5; i++ {
-		//TIP <p>To start your debugging session, right-click your code in the editor and select the Debug option.</p> <p>We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-		// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.</p>
-		fmt.Println("i =", 100/i)
+	logger := log.New(log.Writer(), "[SERVER] ", log.LstdFlags)
+
+	cfg, err := config.Load()
+	if err != nil {
+		logger.Fatalf("Failed to load configuration: %v", err)
 	}
+
+	logger.Println("Initializing database connection")
+	db, err := database.NewPostgresDB(ctx, database.PostgresConfig{
+		DSN:                cfg.DatabaseURL,
+		MaxOpenConnections: 25,
+		MaxIdleConnections: 25,
+		ConnMaxLifetime:    5 * time.Minute,
+	})
+	if err != nil {
+		logger.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	defer func(db *sqlx.DB) {
+		err := db.Close()
+		if err != nil {
+			logger.Fatalf("Failed to close database connection: %v", err)
+		} else {
+			logger.Println("Database connection closed successfully.")
+		}
+	}(db)
+
+	logger.Println("Database connected successfully")
+	logger.Printf("Server will start on port %d", cfg.Port)
 }
