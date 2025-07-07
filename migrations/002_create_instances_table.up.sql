@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS servers (
+    id SERIAL PRIMARY KEY,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    bridge_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_servers_token ON servers(token);
