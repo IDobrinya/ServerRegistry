@@ -98,11 +98,15 @@ func (h *Handler) UnlinkAllDevices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.userRepo.UnlinkAllUsersFromServer(req.Token)
+	rowsAffected, err := h.userRepo.UnlinkAllUsersFromServer(req.Token)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "Failed to unlink devices")
 		return
 	}
 
-	writeJSON(w, http.StatusOK, dto.SuccessResponse{Message: "All devices unlinked successfully"})
+	if rowsAffected == 0 {
+		writeJSON(w, http.StatusOK, dto.SuccessResponse{Message: "No devices were connected to unlink"})
+	} else {
+		writeJSON(w, http.StatusOK, dto.SuccessResponse{Message: "All devices unlinked successfully"})
+	}
 }
