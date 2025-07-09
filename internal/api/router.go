@@ -1,7 +1,9 @@
 package api
 
 import (
+	"log"
 	"server-registry/internal/api/handler"
+	"server-registry/internal/api/middleware"
 
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
@@ -9,8 +11,10 @@ import (
 
 func NewRouter(db *sqlx.DB) *mux.Router {
 	h := handler.NewHandler(db)
+	logger := log.New(log.Writer(), "[API] ", log.LstdFlags)
 
 	router := mux.NewRouter()
+	router.Use(middleware.LoggingMiddleware(logger))
 
 	api := router.PathPrefix("/api/v1").Subrouter()
 
