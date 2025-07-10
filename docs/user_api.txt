@@ -1,0 +1,71 @@
+# Web API Endpoints Documentation
+
+## User Management Endpoints
+
+### 1. Create User
+**Endpoint:** `POST /api/v1/user/create`
+**Headers:** `User-ID: string` (required)
+**Description:** Создает нового пользователя в системе
+**Body:** None
+
+**Response:**
+- 201 Created: Пользователь успешно создан
+- 200 OK: Пользователь уже существует (не является ошибкой)
+- 400 Bad Request: Отсутствует или пустой User-ID
+
+**Example:**
+```
+POST /api/v1/user/create
+User-ID: user-123
+```
+
+### 2. Get User Server
+**Endpoint:** `GET /api/v1/user/server`
+**Headers:** `User-ID: string` (required)
+**Description:** Получает информацию о сервере, к которому привязан пользователь
+**Body:** None
+
+**Response:**
+- 200 OK: Информация о сервере
+- 400 Bad Request: Отсутствует или пустой User-ID
+
+**Response Body:**
+```json
+{
+  "server_token": "sk-1234567890abcdef",
+  "bridge_url": "https://example.trycloudflare.com"
+}
+```
+
+### 3. Link Server to User
+**Endpoint:** `POST /api/v1/user/link-server`
+**Headers:** `User-ID: string` (required)
+**Description:** Привязывает сервер к пользователю (обычно после сканирования QR-кода)
+**Body:** JSON
+
+**Request Body:**
+```json
+{
+  "server_token": "sk-1234567890abcdef"
+}
+```
+
+**Response:**
+- 200 OK: Сервер успешно привязан
+- 400 Bad Request: Неверный запрос или отсутствует User-ID
+- 404 Not Found: Сервер с указанным токеном не найден
+
+## Implementation Notes
+
+1. **User-ID Header**: Все эндпоинты требуют заголовок User-ID для идентификации пользователя
+2. **Idempotent Operations**: Создание пользователя является идемпотентной операцией
+3. **Server Tokens**: Токены серверов имеют формат "sk-XXXXXXXXXXXXXXXX"
+4. **Bridge URLs**: URL'ы для подключения к серверам через Cloudflare Tunnel
+5. **Error Handling**: Все ошибки возвращаются в стандартном формате JSON
+
+## Typical User Flow
+
+1. **POST /api/v1/user/create** - Создание пользователя при первом входе
+2. **GET /api/v1/user/server** - Проверка наличия привязанного сервера
+3. **POST /api/v1/user/link-server** - Привязка сервера после сканирования QR-кода
+4. **GET /api/v1/user/server** - Получение URL для подключения к серверу

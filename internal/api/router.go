@@ -26,6 +26,7 @@ func NewRouter(db *sqlx.DB) *mux.Router {
 	// User endpoints
 	api.HandleFunc("/user/server", h.GetUserServer).Methods("GET")
 	api.HandleFunc("/user/link-server", h.LinkServerToUser).Methods("POST")
+	api.HandleFunc("/user/create", h.CreateUser).Methods("POST")
 
 	return router
 }

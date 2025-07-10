@@ -114,3 +114,36 @@ func (h *Handler) LinkServerToUser(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, dto.SuccessResponse{Message: "Server linked successfully"})
 }
+
+func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get("User-ID")
+	if userID == "" {
+		writeError(w, http.StatusBadRequest, "User-ID header is required")
+		return
+	}
+
+	userID = strings.TrimSpace(userID)
+	if userID == "" {
+		writeError(w, http.StatusBadRequest, "User-ID header cannot be empty")
+		return
+	}
+
+	existingUser, err := h.userRepo.GetUserByID(userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Failed to check existing user")
+		return
+	}
+
+	if existingUser != nil {
+		writeJSON(w, http.StatusOK, dto.SuccessResponse{Message: "User already exists"})
+		return
+	}
+
+	_, err = h.userRepo.CreateUser(userID, nil)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Failed to create user")
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, dto.SuccessResponse{Message: "User created successfully"})
+}

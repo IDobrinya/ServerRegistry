@@ -67,7 +67,35 @@
 						"link-server"
 					]
 				},
-				"description": "Привязывает сервер к пользователю (обычно после сканирования QR-кода)"
+				"description": "Привязывает сервер к пользователю"
+			}
+		},
+		{
+			"name": "Create User",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "User-ID",
+						"value": "user-123",
+						"description": "Идентификатор пользователя"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/user/create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"create"
+					]
+				},
+				"description": "Создает нового пользователя. Если пользователь уже существует, возвращает успешный ответ без ошибки"
 			}
 		}
 	]
