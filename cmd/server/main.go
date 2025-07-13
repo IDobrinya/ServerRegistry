@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/jmoiron/sqlx"
 	"server-registry/internal/api"
 	"server-registry/internal/config"
@@ -47,12 +48,18 @@ func main() {
 
 	router := api.NewRouter(db)
 
+	corsHandler := handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
+		handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "User-ID"}),
+	)(router)
+
 	addr := fmt.Sprintf(":%d", cfg.Port)
 	logger.Printf("Starting server on %s", addr)
 
 	server := &http.Server{
 		Addr:    addr,
-		Handler: router,
+		Handler: corsHandler,
 	}
 
 	if err := server.ListenAndServe(); err != nil {
