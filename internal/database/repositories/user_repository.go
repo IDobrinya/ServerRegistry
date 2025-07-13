@@ -74,6 +74,25 @@ func (r *UserRepository) UpdateUserLinkedServer(userID string, linkedServerID in
 	return r.GetUserByID(userID)
 }
 
+func (r *UserRepository) UnlinkUserDevice(userID string) (int64, error) {
+	query := `
+		UPDATE users
+		SET linked_server = NULL, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $1`
+
+	result, err := r.db.Exec(query, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return rowsAffected, nil
+}
+
 func (r *UserRepository) UnlinkAllUsersFromServer(serverToken string) (int64, error) {
 	query := `
 		UPDATE users 

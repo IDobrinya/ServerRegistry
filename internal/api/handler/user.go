@@ -92,23 +92,19 @@ func (h *Handler) LinkServerToUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := h.userRepo.GetUserByID(userID)
+	if user == nil {
+		writeError(w, http.StatusNotFound, "User not found")
+		return
+	}
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "Failed to get user")
 		return
 	}
 
-	if user == nil {
-		_, err = h.userRepo.CreateUser(userID, &req.ServerToken)
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "Failed to create user")
-			return
-		}
-	} else {
-		_, err = h.userRepo.UpdateUserLinkedServer(userID, server.ID)
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "Failed to update user")
-			return
-		}
+	_, err = h.userRepo.UpdateUserLinkedServer(userID, server.ID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Failed to update user")
+		return
 	}
 
 	writeJSON(w, http.StatusOK, dto.SuccessResponse{Message: "Server linked successfully"})
@@ -145,4 +141,35 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, dto.SuccessResponse{Message: "User created successfully"})
+}
+
+func (h *Handler) UnlinkServer(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get("User-ID")
+	if userID == "" {
+		writeError(w, http.StatusBadRequest, "User-ID header is required")
+		return
+	}
+
+	userID = strings.TrimSpace(userID)
+	if userID == "" {
+		writeError(w, http.StatusBadRequest, "User-ID header cannot be empty")
+		return
+	}
+
+	user, err := h.userRepo.GetUserByID(userID)
+	if user == nil {
+		writeError(w, http.StatusNotFound, "User not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Failed to get user")
+		return
+	}
+
+	_, err = h.userRepo.UnlinkUserDevice(userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Failed to update user")
+		return
+	}
+	writeJSON(w, http.StatusCreated, dto.SuccessResponse{Message: "Server unlinked successfully"})
 }
