@@ -52,8 +52,7 @@ func (h *Handler) GetUserServer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, dto.GetUserServerResponse{
-		ServerToken: server.Token,
-		BridgeURL:   bridgeURL,
+		BridgeURL: bridgeURL,
 	})
 }
 
@@ -105,7 +104,7 @@ func (h *Handler) LinkServerToUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		_, err = h.userRepo.UpdateUserLinkedServer(userID, req.ServerToken)
+		_, err = h.userRepo.UpdateUserLinkedServer(userID, server.ID)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "Failed to update user")
 			return

@@ -60,7 +60,7 @@ func (r *UserRepository) GetUserByLinkedServer(linkedServerID string) (*models.U
 	return user, nil
 }
 
-func (r *UserRepository) UpdateUserLinkedServer(userID string, linkedServerID string) (*models.User, error) {
+func (r *UserRepository) UpdateUserLinkedServer(userID string, linkedServerID int) (*models.User, error) {
 	query := `
 		UPDATE users 
 		SET linked_server = $2, updated_at = CURRENT_TIMESTAMP 

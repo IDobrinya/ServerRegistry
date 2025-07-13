@@ -32,7 +32,6 @@ User-ID: user-123
 **Response Body:**
 ```json
 {
-  "server_token": "sk-1234567890abcdef",
   "bridge_url": "https://example.trycloudflare.com"
 }
 ```
